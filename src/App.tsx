@@ -1,52 +1,55 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { useState, useEffect } from "react";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [videos, setVideos] = useState<any[]>([]);
+  const [current, setCurrent] = useState<any>(null);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  useEffect(() => {
+    const folder = "G:/Videos/Videos JA";
+    invoke<string[]>("get_videos", {dir: folder})
+      .then((file) => {
+        setVideos(file);
+        if (file.length > 0) setCurrent(file[0]);
+      })
+      .catch((e) => console.error(e));
+  }, []);
 
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-      <div className="h-screen flex items-center justify-center bg-slate-800 text-white text-4xl font-bold">
-        🚀 Tailwind + Tauri + React funcionando
-      </div>
+      <div className="flex h-screen">
+        {/* Player */}
+        <div className="flex-1 flex items-center justify-center bg-black">
+          {current && (
+            <video 
+            key={current.path}
+            src={convertFileSrc(`${current.path}`)} 
+            controls
+            autoPlay
+            className="h-full w-full rounded-lg"
+            >
+              {/* <source src={`file://${current.path}`} type="video/mp4" />
+              Your browser does not support the video tag. */}
+            </video>
+          )}
+        </div>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {/* Video List */}
+        <div className="flex min-w-[240px] flex-col gap-1 p-1.5">
+          {videos.map((video, index) => (
+            <div 
+              key={index}
+              role="button"
+              className="text-slate-800 pointer flex w-full items-center rounded-md p-3 transition-all hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100"
+              onClick={() => setCurrent(video)}
+            >
+              {video.name.replace(/\.[^/.]+$/, "")}
+            </div>
+          ))}
+        </div>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+      
     </main>
   );
 }
