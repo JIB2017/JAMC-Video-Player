@@ -11,6 +11,7 @@
     "core:window:default",
     "core:app:default",
     "core:resources:default",
-    "dialog:default"
+    "dialog:default",
+    "store:default"
   ]
 }
