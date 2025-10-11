@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import { open } from '@tauri-apps/plugin-dialog';
-import { load } from '@tauri-apps/plugin-store';
+import { open } from "@tauri-apps/plugin-dialog";
+import { load } from "@tauri-apps/plugin-store";
 import "./App.css";
 
 const store = await load(".store.json");
@@ -39,72 +39,90 @@ function App() {
 
   async function loadVideos(dir: string) {
     try {
-      const files = await invoke<string[]>("get_videos", {dir});
+      const files = await invoke<string[]>("get_videos", { dir });
       setVideos(files);
       if (files.length > 0) setCurrent(files[0]);
-    } catch(err) {
+    } catch (err) {
       console.error(err);
     }
   }
 
   return (
     <main className="">
-      <div className="flex flex-row h-screen">
+      <div className="">
         {/* Player */}
-        <div className="flex flex-col items-center justify-center bg-black">
+        <div className="relative flex flex-row justify-around h-screen">
           {current ? (
             <>
-              <button
-                onClick={selectFolder}
-                className="flex items-center justify-center bg-blue-600 px-4 py-2 rounded"
-              >
-                Seleccionar otra carpeta
-              </button>
-              <video 
-              key={current.path}
-              src={convertFileSrc(`${current.path}`)} 
-              controls
-              autoPlay={autoPlay}
-              className="h-full w-full rounded-lg"
-              />
+              <div className="flex flex-col items-center justify-center">
+                <video
+                  key={current.path}
+                  src={convertFileSrc(`${current.path}`)}
+                  controls
+                  autoPlay={autoPlay}
+                  className="w-4xl h-4xl rounded-md"
+                />
+              </div>
+              <div className="flex flex-col ">
+                <div className="flex flex-row justify-center gap-4">
+                  <div className="flex items-center justify-center rounded-3xl m-2 bg-white/5 pl-3 outline-1 -outline-offset-1 outline-gray-600 has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-indigo-500">
+                    <input
+                      type="text"
+                      placeholder="Buscar..."
+                      name="cancion"
+                      className="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
+                    />
+                  </div>
+                  <button
+                    onClick={selectFolder}
+                    className="w-1xl items-center justify-center m-2 py-2 px-5 cursor-ew-resize"
+                  >
+                    Cambiar de carpeta
+                  </button>
+                </div>
+                {/* Video List */}
+                <div className="overflow-y-auto h-screen">
+                  <ul className="flex justify-end flex-col ml-2 ">
+                    {videos.map((video, index) => (
+                      <li
+                        key={index}
+                        role="button"
+                        className="cursor-pointer p-1 rounded-md hover:bg-gray-200"
+                        onClick={() => {
+                          setCurrent(video);
+                          setAutoPlay(true);
+                        }}
+                      >
+                        <p
+                          className={`text-l hyphens-auto ${
+                            current.path === video.path
+                              ? "text-red-700 font-bold italic"
+                              : "text-red-400 font-normal"
+                          }`}
+                        >
+                          {video.name.replace(/\.[^/.]+$/, "")}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </>
+          ) : !folder ? (
+            <button onClick={selectFolder} className="">
+              Selecciona una carpeta
+            </button>
           ) : (
-            !folder ? (
-              <button
-                onClick={selectFolder}
-                className="items-center justify-center bg-blue-600 px-4 py-2 rounded"
-              >
-                Selecciona una carpeta
-              </button>
-            ) : (
-              <video 
+            <video
               key={"empty"}
-              src={""} 
+              src={"null"}
               controls
               autoPlay={autoPlay}
-              className="h-full w-full rounded-lg"
-              />
-            )
+              className=""
+            />
           )}
         </div>
-
-        {/* Video List */}
-        <ul className="relative justify-end min-w-[240px] flex-col gap-1 p-2 overflow-y-auto bg-slate-50">
-          {videos.map((video, index) => (
-            <li 
-              key={index}
-              role="button"
-              className={`cursor-pointer text-slate-800 pointer p-4 flex w-full items-center rounded-md p-3 transition-all ${
-                current.path === video.path ? "bg-slate-700" : "hover:bg-slate-800"
-              }`}
-              onClick={() => { setCurrent(video); setAutoPlay(true) }}
-            >
-              {video.name.replace(/\.[^/.]+$/, "")}
-            </li>
-          ))}
-        </ul>
       </div>
-      
     </main>
   );
 }

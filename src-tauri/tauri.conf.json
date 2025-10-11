@@ -15,12 +15,14 @@
         "title": "jamc-video-player",
         "width": 1280,
         "height": 720,
-        "decorations": true
+        "decorations": true,
+        "label": "main",
+        "url": "index.html",
+        "additionalBrowserArgs": "--use-angle=opengl --ignore-gpu-blocklist"
       }
     ],
     "security": {
       "csp": null,
-      
       "assetProtocol": {
         "enable": true,
         "scope": ["G:/Videos/Videos JA/*", "$TEMP/{<jamc_video_player_lib>}/**"]
